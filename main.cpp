@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <fstream>
 #include <functional>
 #include <iostream>
@@ -8,6 +9,7 @@
 #include <thread>
 #include <unistd.h>
 #include <vector>
+
 
 size_t get_file_size(const std::string &input_file, const std::string &output_file) {
   FILE *in_file = fopen(input_file.c_str(), "rb");
@@ -52,6 +54,9 @@ void reverse_lines(std::ifstream &m_file, std::pair<size_t, size_t> bounds, std:
 }
 
 int reverse_file_lines(std::string input_file, std::string output_file) {
+  if (std::filesystem::exists(output_file)) {
+    throw std::invalid_argument("Output file already exists!");
+  }
   std::vector<std::thread> processor_threads;
   size_t num_threads = 7;
 
@@ -89,8 +94,13 @@ int reverse_file_lines(std::string input_file, std::string output_file) {
 }
 
 int do_main() {
-  reverse_file_lines("./input.txt", "./output_1.txt");
-  reverse_file_lines("./output_1.txt", "./output_2.txt");
+  try {
+    reverse_file_lines("./input.txt", "./output_1.txt");
+    reverse_file_lines("./output_1.txt", "./output_2.txt");
+  } catch (const std::invalid_argument &e) {
+    std::cout << e.what() << std::endl;
+    return EXIT_FAILURE;
+  }
   return EXIT_SUCCESS;
 }
 
